@@ -1,0 +1,50 @@
+version: '3.3'
+networks:
+  transmission:
+    driver: bridge
+
+services:
+  transmission:
+    build:
+      context: dockerTransmission
+    networks:
+      transmission:
+        aliases:
+          - transmission
+    ports:
+      - 51413:51413 
+      - 51413:51413/udp
+      - 9091:9091
+    volumes:
+      - /usr/share/media:/usr/share/media:rw
+      - /etc/transmission/torrents:/etc/transmission/torrents:rw
+      - /etc/transmission/resume:/etc/transmission/resume:rw
+      - /etc/transmission/blocklists:/etc/transmission/blocklists:rw
+    depends_on:
+      - rutracker-proxy
+
+  rutracker-proxy:
+    build:
+      context: dockerRtoProxy
+    hostname: rutracker-proxy
+    ports:
+      - 8080:8080
+    networks:
+      transmission:
+        aliases:
+          - rutracker-proxy
+
+  minidlna:
+    build:
+      context: dockerMinidlna
+    hostname: minidlna-home
+    network_mode: "host"
+    ports:
+      - 1900:1900/udp
+      - 8200:8200
+    dns_search:
+      - home
+    volumes:
+      - /usr/share/media:/data:ro
+
+

@@ -1,0 +1,44 @@
+version: '3.3'
+
+networks:
+  telegram:
+    driver: bridge
+  transmission:
+    driver: bridge
+
+services:
+  backend:
+    build:
+      context: dockerTelegramWebHook
+    networks:
+      telegram:
+        aliases:
+          - backend
+          - backend.telegram
+          - backend.telegram.
+    hostname: backend.telegram.
+    dns_search:
+      - telegram
+    volumes:
+      - /etc/telegramBot.cfg:/etc/telegramBot.cfg:ro
+
+  nginx:
+    build:
+      context: dockerNginx
+    networks:
+      telegram:
+        aliases:
+          - nginx
+      transmission:
+        aliases:
+          - proxy
+    depends_on:
+      - backend
+    ports:
+      - 443:1443
+    dns_search:
+      - telegram
+    volumes:
+      - /etc/letsencrypt/live/bezmenovo.ddns.net:/etc/letsencrypt/live/bezmenovo.ddns.net:ro
+      - /etc/letsencrypt/archive/bezmenovo.ddns.net:/etc/letsencrypt/archive/bezmenovo.ddns.net:ro
+
