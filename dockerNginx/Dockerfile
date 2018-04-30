@@ -11,7 +11,6 @@ ENV TRANSMISSION_PORT 8080
 ENV NGINX_PORT    1443
 
 RUN \
-# apt-get update &&
   apt-get install -y nginx  && \
   apt-get clean all && \
   rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* && \
@@ -21,6 +20,7 @@ RUN \
 COPY ${NGINX_CONF_TELEGRAM} ${NGINX_CONF_DIR}/
 COPY ${NGINX_CONF_TRANSMISSION} ${NGINX_CONF_DIR}/
 COPY ${NGINX_CONF} /etc/nginx/
+
 RUN sed -i 's%{{TELEGRAM_HOST}}%'$TELEGRAM_HOST'%' ${NGINX_CONF_DIR}/${NGINX_CONF_TELEGRAM} && \
     sed -i 's%{{TELEGRAM_PORT}}%'$TELEGRAM_PORT'%' ${NGINX_CONF_DIR}/${NGINX_CONF_TELEGRAM} && \
     sed -i 's%{{NGINX_PORT}}%'$NGINX_PORT'%' ${NGINX_CONF_DIR}/${NGINX_CONF_TELEGRAM} && \

@@ -22,3 +22,4 @@ RUN addgroup rutracker-proxy && adduser -G rutracker-proxy -S rutracker-proxy
 USER rutracker-proxy
 EXPOSE 8080
 ENTRYPOINT /usr/local/bin/rutracker-proxy
+
