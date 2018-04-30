@@ -1,4 +1,4 @@
-FROM home_docker_image
+FROM alpine:3.7
 
 ENV TELEGRAM_HOST 0.0.0.0
 ENV TELEGRAM_PORT 7771
@@ -9,14 +9,10 @@ COPY telegtamBotWebHook.py $TELEGRAM_BIN
 RUN sed -i 's%{{TELEGRAM_HOST}}%'$TELEGRAM_HOST'%' $TELEGRAM_BIN  && \
     sed -i 's%{{TELEGRAM_PORT}}%'$TELEGRAM_PORT'%' $TELEGRAM_BIN
 
-RUN \
-#  apt-get update && apt-get -y upgrade &&\
-  apt-get install -y python3-pip && \
-  apt-get clean all && \
-  rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+RUN apk add --no-cache python3 
 
-RUN pip3 install --upgrade pip && pip3 install cherrypy configparser pyTelegramBotAPI transmissionrpc && \
-    useradd telegram && unlink /etc/localtime && ln -s /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+RUN pip3 install cherrypy configparser pyTelegramBotAPI transmissionrpc
+RUN addgroup telegram && adduser -G telegram -S telegram
 
 USER telegram
 EXPOSE $TELEGRAM_PORT

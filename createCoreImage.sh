@@ -1,7 +1,7 @@
 #!/bin/sh
 
-DOCKER_BASE_DIRECTORY=dockerBaseHome
-LINUX_DOCKER_URL="http://cdimage.ubuntu.com/ubuntu-base/releases/17.10/release/ubuntu-base-17.10-base-armhf.tar.gz"
+#DOCKER_BASE_DIRECTORY=dockerBaseHome
+#LINUX_DOCKER_URL="http://cdimage.ubuntu.com/ubuntu-base/releases/18.04/release/ubuntu-base-18.04-base-armhf.tar.gz"
 
 if [ -n "$(docker ps -aq)" ]
 then
@@ -14,13 +14,10 @@ then
   docker rmi -f $(docker images -aq)
 fi
 
-curl $LINUX_DOCKER_URL | gunzip | sudo docker import - armhf-ubuntu_core:latest
-
-cd $DOCKER_BASE_DIRECTORY
-
-docker build -t home_docker_image ./
-
-cd ..
+#curl $LINUX_DOCKER_URL | gunzip | sudo docker import - armhf-ubuntu_core:latest
+#cd $DOCKER_BASE_DIRECTORY
+#docker build -t home_docker_image ./
+#cd ..
 
 docker-compose  -f docker-composeTransmission.yml build
 docker-compose  -f docker-composeTelegram.yml build
