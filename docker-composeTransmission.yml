@@ -7,6 +7,7 @@ services:
   transmission:
     build:
       context: dockerTransmission
+    image: ${DOCKERHUB_USER}/transmission_arm:${TRANSMISSION_TAG}
     networks:
       transmission:
         aliases:
@@ -26,6 +27,7 @@ services:
   rutracker-proxy:
     build:
       context: dockerRtoProxy
+    image: ${DOCKERHUB_USER}/rutracker-proxy_arm:${RUTRACKER_PROXY_TAG}
     hostname: rutracker-proxy
     ports:
       - 8080:8080
@@ -36,7 +38,10 @@ services:
 
   minidlna:
     build:
+      args:
+        - MINIDLNA_VERSION=${MINIDLNA_VERSION}
       context: dockerMinidlna
+    image: ${DOCKERHUB_USER}/minidlna_arm:${MINIDLNA_TAG}
     hostname: minidlna-home
     network_mode: "host"
     ports:

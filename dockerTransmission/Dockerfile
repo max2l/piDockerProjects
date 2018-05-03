@@ -1,14 +1,12 @@
-FROM alpine:3.7
+FROM alpine:3.7 as builder
 
 MAINTAINER Maxim Gorbachev <bezmenovo@gmail.com>
 
-ENV CONFIG_DIR_T /etc/transmission/
-
 WORKDIR /usr/src
-RUN \
-  apk add --no-cache xz \
+RUN apk add --no-cache xz \
     git \
     cmake \
+    python \
     make \
     gcc \
     libtool \ 
@@ -17,30 +15,33 @@ RUN \
     curl-dev \
     zlib-dev \
     automake \
-    autoconf && \ 
-  git clone https://github.com/transmission/transmission.git && \
-  cd transmission && \
-  git submodule update --init && \
-  mkdir build && \
+    autoconf
+
+RUN  git clone https://github.com/transmission/transmission.git
+WORKDIR /usr/src/transmission
+RUN git submodule update --init
+RUN mkdir -p /opt/transmission
+RUN mkdir build && \
   cd build && \
   cmake \
     -DENABLE_CLI=OFF \
     -DENABLE_LIGHTWEIGHT=ON \
     -DINSTALL_DOC=OFF \
     -DINSTALL_LIB=ON \
+    -DCMAKE_INSTALL_PREFIX:PATH=/opt/transmission \
     -DENABLE_GTK=OFF .. && \
-  make && make install && \
-  cd ../.. && rm -rf transmission \
-  apk del \
-    git \
-    cmake \
-    make \
-    gcc \
-    automake \
-    autoconf \
-    build-base
+  make && make install
 
-ADD settings.json $CONFIG_DIR_T
+FROM alpine:3.7
+
+ENV CONFIG_DIR_T /etc/transmission/
+
+COPY settings.json $CONFIG_DIR_T
+COPY --from=builder /opt/transmission /opt/transmission
+
+RUN apk add --no-cache \
+    curl \
+    libstdc++
 
 ENV http_proxy http://rutracker-proxy:8080
 ENV https_proxy http://rutracker-proxy:8080
@@ -61,10 +62,12 @@ RUN sed -i 's%"rpc-username": ""%"rpc-username": "transmission"%' ${CONFIG_DIR_T
     sed -i 's%"download-dir":.*%"download-dir": "/usr/share/media",%' ${CONFIG_DIR_T}/settings.json
 
 WORKDIR /usr/share/media
+
 RUN addgroup transmission && adduser -G transmission -S transmission  && \
   chown -R transmission:transmission /etc/transmission/
 USER transmission
 EXPOSE 51413/tcp 51413/udp 9091/tcp
 VOLUME ["/usr/share/media"]
-ENTRYPOINT chown -R transmission:transmission /etc/transmission/ && /usr/local/bin/transmission-daemon -f -g ${CONFIG_DIR_T} 
+
+ENTRYPOINT chown -R transmission:transmission /etc/transmission/ && /opt/transmission/bin/transmission-daemon -f -g ${CONFIG_DIR_T}
 
